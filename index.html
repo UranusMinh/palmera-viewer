@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Game Studio — Rigged Character Viewer (Three.js)</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    #app { position: fixed; inset: 0; background: #14171c; }
+    canvas { display: block; }
+
+    /* Header */
+    #bar { position: fixed; top: 0; left: 0; right: 0; padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px; color: #e6e9ef;
+      background: linear-gradient(#14171cdd, #14171c00); pointer-events: none; z-index: 5; }
+    #bar .title { font-weight: 600; font-size: 14px; }
+    #bar .sub { font-size: 12px; color: #9aa4b2; }
+
+    /* Animation clip controls */
+    #clips { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 92vw; z-index: 5; }
+    #clips button { pointer-events: auto; cursor: pointer; border: 1px solid #2c333d;
+      background: #1c2128; color: #cdd3dc; padding: 8px 14px; border-radius: 8px;
+      font-size: 13px; transition: background .15s, border-color .15s; }
+    #clips button:hover { background: #242b34; }
+    #clips button.active { background: #2f6feb33; border-color: #2f6feb; color: #fff; }
+
+    /* Top-right view toggles */
+    #toggles { position: fixed; top: 10px; right: 14px; display: flex; gap: 8px; z-index: 5; }
+    #toggles button { pointer-events: auto; cursor: pointer; border: 1px solid #2c333d;
+      background: #1c2128dd; color: #cdd3dc; padding: 7px 12px; border-radius: 8px;
+      font-size: 12px; transition: background .15s, border-color .15s; }
+    #toggles button:hover { background: #242b34; }
+    #toggles button.active { background: #2f6feb33; border-color: #2f6feb; color: #fff; }
+
+    /* Stats readout (top-left, under the title) */
+    #stats { position: fixed; top: 44px; left: 14px; z-index: 5; font-size: 12px;
+      color: #9aa4b2; background: #1c2128cc; border: 1px solid #2c333d; border-radius: 8px;
+      padding: 7px 11px; line-height: 1.55; font-variant-numeric: tabular-nums;
+      white-space: pre; pointer-events: none; }
+    #stats b { color: #e6e9ef; font-weight: 600; }
+
+    /* Speed slider row (above the clip buttons) */
+    #speedRow { position: fixed; left: 50%; bottom: 66px; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px; z-index: 5;
+      background: #1c2128dd; border: 1px solid #2c333d; border-radius: 10px; padding: 7px 14px; }
+    #speedRow label { font-size: 12px; color: #9aa4b2; }
+    #speedRow input { pointer-events: auto; width: 150px; accent-color: #2f6feb; }
+    #speedVal { font-size: 12px; color: #e6e9ef; min-width: 38px; text-align: right;
+      font-variant-numeric: tabular-nums; }
+
+    /* Status / loading / error toast */
+    #status { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      max-width: 520px; padding: 16px 20px; border-radius: 12px; z-index: 6;
+      background: #1c2128; border: 1px solid #2c333d; color: #cdd3dc; font-size: 13px;
+      line-height: 1.5; text-align: center; }
+    #status.err { border-color: #e5534b; }
+    #status code { background: #0f1317; padding: 1px 6px; border-radius: 4px; color: #e6e9ef; }
+    #status.hidden { display: none; }
+  </style>
+
+  <!-- Three.js r186 via import map (ES modules, no build step) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="bar">
+    <span class="title">Rigged Character Viewer</span>
+    <span class="sub" id="modelName">loading…</span>
+  </div>
+  <div id="toggles">
+    <button id="btnPlay" class="active" title="Play / pause animation">Pause</button>
+    <button id="btnRotate" title="Turntable auto-rotate">Auto-rotate</button>
+    <button id="btnWire" title="Toggle wireframe">Wireframe</button>
+    <button id="btnSkeleton" title="Toggle skeleton overlay">Skeleton</button>
+  </div>
+  <div id="stats"></div>
+  <div id="speedRow">
+    <label for="speed">Speed</label>
+    <input type="range" id="speed" min="0" max="2" step="0.05" value="1" />
+    <span id="speedVal">1.00×</span>
+  </div>
+  <div id="clips"></div>
+  <div id="status">Loading model…</div>
+
+  <script type="module" src="./viewer.js"></script>
+</body>
+</html>
