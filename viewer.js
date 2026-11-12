@@ -23,7 +23,7 @@ const DEFAULT_MODEL = './models/CHAR-03.glb';
 const MODEL_URL = new URLSearchParams(location.search).get('model') || DEFAULT_MODEL;
 
 const statusEl = document.getElementById('status');
-const clipsEl = document.getElementById('clips');
+const clipSelectEl = document.getElementById('clipSelect');
 const modelNameEl = document.getElementById('modelName');
 const statsEl = document.getElementById('stats');
 const speedEl = document.getElementById('speed');
@@ -76,7 +76,7 @@ function fadeToAction(name, duration = 0.3) {
   if (activeAction) activeAction.fadeOut(duration);
   next.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).fadeIn(duration).play();
   activeAction = next;
-  for (const btn of clipsEl.children) btn.classList.toggle('active', btn.dataset.clip === name);
+  if (clipSelectEl) clipSelectEl.value = name;
 }
 
 // Pick a sensible default clip: prefer idle, else the first one.
@@ -85,22 +85,25 @@ function pickDefaultClip(names) {
 }
 
 function buildClipUI(animations) {
-  clipsEl.innerHTML = '';
+  clipSelectEl.innerHTML = '';
   if (!animations.length) {
-    const note = document.createElement('span');
-    note.textContent = 'No animation clips in this model';
-    note.style.cssText = 'color:#9aa4b2;font-size:13px;';
-    clipsEl.appendChild(note);
+    const opt = document.createElement('option');
+    opt.textContent = 'No animation clips';
+    opt.disabled = true;
+    clipSelectEl.appendChild(opt);
+    clipSelectEl.disabled = true;
     return;
   }
+  clipSelectEl.disabled = false;
   for (const clip of animations) {
-    const btn = document.createElement('button');
-    btn.textContent = clip.name;
-    btn.dataset.clip = clip.name;
-    btn.addEventListener('click', () => fadeToAction(clip.name));
-    clipsEl.appendChild(btn);
+    const opt = document.createElement('option');
+    opt.value = clip.name;
+    opt.textContent = clip.name;
+    clipSelectEl.appendChild(opt);
   }
 }
+
+clipSelectEl.addEventListener('change', () => fadeToAction(clipSelectEl.value));
 
 // Center the model and fit the camera / grid to its size.
 function frameModel(object) {
@@ -187,6 +190,14 @@ function applyWireframe(on) {
     for (const m of mats) if (m) m.wireframe = on;
   });
 }
+
+// Collapse / expand the single control panel (☰ in the header).
+const panelToggle = document.getElementById('panelToggle');
+const panelBody = document.getElementById('panelBody');
+panelToggle.addEventListener('click', () => {
+  const open = panelBody.classList.toggle('collapsed') === false;
+  panelToggle.setAttribute('aria-expanded', String(open));
+});
 
 const btnRotate = document.getElementById('btnRotate');
 btnRotate.addEventListener('click', () => {
